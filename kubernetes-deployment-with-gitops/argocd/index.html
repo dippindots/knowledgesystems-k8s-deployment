@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <meta name="turbo-root" content="/knowledgesystems-k8s-deployment">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.3.831310458247">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.839188138770">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.3">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Argo CD | CDSI K8s Documentation</title>
@@ -38,12 +38,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.3.831310458247" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.839188138770" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.3" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.3.831310458247" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.839188138770" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -167,6 +167,14 @@
 <p>Argo CD dashboard can be accessed in multiple ways.</p>
 <h3 id="public-instance">Public Instance</h3>
 <p>For some of our clusters, we have attached the Argo CD dashboard to a public domain. See table below for the list of apps that have Argo CD instances publicly available.</p>
+<retype-table copy-text="| App                 | Environment | Argo CD URL                                                                        |
+|---------------------|-------------|------------------------------------------------------------------------------------|
+| cBioPortal Public   | Prod        | [argocd.cbioportal.org](https://argocd.cbioportal.org)                             |
+| cBioPortal Internal | Prod        | [argocd.cbioportal.aws.mskcc.org](https://argocd.cbioportal.aws.mskcc.org)         |
+| cBioPortal Internal | Dev         | [argocd.cbioportal.dev.aws.mskcc.org](https://argocd.cbioportal.dev.aws.mskcc.org) |
+| OncoKB Public       | Prod        | [argocd.oncokb.org](https://argocd.oncokb.org)                 |
+| OncoKB Internal     | Prod        | [argocd.oncokb.aws.mskcc.org](https://argocd.oncokb.aws.mskcc.org)                 |
+| OncoKB Internal     | Dev         | [argocd.oncokb.dev.aws.mskcc.org](https://argocd.oncokb.dev.aws.mskcc.org)         |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="compact">
 <thead>
@@ -210,6 +218,7 @@
 </tbody>
 </table>
 </div>
+</retype-table>
 <h3 id="port-forwarding">Port-Forwarding</h3>
 <p>By default, all ArgoCD installations come with a built-in dashboard that you can access by port-forwarding. You will need <code translate="no" v-pre>kubectl</code> and access to the cluster for this method.</p>
 <ol>

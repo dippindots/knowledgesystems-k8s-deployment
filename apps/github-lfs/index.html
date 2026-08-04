@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <meta name="turbo-root" content="/knowledgesystems-k8s-deployment">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.3.831310458247">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.839188138770">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.3">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>GitHub LFS | CDSI K8s Documentation</title>
@@ -38,12 +38,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.3.831310458247" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.839188138770" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.3" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.3.831310458247" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.839188138770" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -165,6 +165,12 @@
 <p>The Lambda source code lives in a separate repository (<a href="https://github.mskcc.org/cdsi/git-lfs-s3">cdsi/git-lfs-s3</a>) and is referenced as a git submodule.</p>
 <h2 id="infrastructure">Infrastructure</h2>
 <p>The setup spans four Terraform modules under <code translate="no" v-pre>iac/aws/203403084713/shared/</code>. Each is managed as a separate state.</p>
+<retype-table copy-text="| Module | Resources | Path |
+|---|---|---|
+| **s3** | S3 bucket, versioning, public access block, bucket policy | `s3/main.tf` |
+| **iam** | Lambda execution role, managed policy attachment, inline policy (S3 + Secrets Manager) | `iam/main.tf` |
+| **secretsmanager** | Secret for curator API keys, auto-generated keys via `random_id` | `secretsmanager/main.tf` |
+| **lambda** | Lambda function, Function URL, public invoke permissions | `lambda/main.tf` |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="comfortable">
 <thead>
@@ -198,6 +204,7 @@
 </tbody>
 </table>
 </div>
+</retype-table>
 <h3 id="cross-module-references">Cross-Module References</h3>
 <p>Since these modules are in separate Terraform states, they use <code translate="no" v-pre>data</code> sources to reference each other&#x27;s resources at plan time (rather than hardcoded ARNs):</p>
 <p>This means Terraform will fail at plan time if a referenced resource doesn&#x27;t exist yet. Apply modules in this order:</p>

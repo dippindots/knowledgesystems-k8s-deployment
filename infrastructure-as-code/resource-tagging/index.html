@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <meta name="turbo-root" content="/knowledgesystems-k8s-deployment">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.5.3.831310458247">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="4.6.0.839188138770">
 
     <!-- See retype.com -->
-    <meta name="generator" content="Retype 4.5.3">
+    <meta name="generator" content="Retype 4.6.0">
 
     <!-- Primary Meta Tags -->
     <title>Resource Tagging | CDSI K8s Documentation</title>
@@ -38,12 +38,12 @@
 
     <script data-cfasync="false">(function(){var cl=document.documentElement.classList,ls=localStorage.getItem("retype_scheme"),hd=cl.contains("dark"),hl=cl.contains("light"),wm=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;if(ls==="dark"||(!ls&&wm&&!hd&&!hl)){cl.remove("light");cl.add("dark")}else if(ls==="light"||(!ls&&!wm&&!hd&&!hl)){cl.remove("dark");cl.add("light")}})();</script>
 
-    <link href="../../resources/css/retype.css?v=4.5.3.831310458247" rel="stylesheet">
+    <link href="../../resources/css/retype.css?v=4.6.0.839188138770" rel="stylesheet">
 
-    <script data-cfasync="false" src="../../resources/js/config.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.5.3" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.5.3.831310458247" data-turbo-eval="false" defer></script>
-    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.5.3.831310458247" defer></script>
+    <script data-cfasync="false" src="../../resources/js/config.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script data-cfasync="false" src="../../resources/js/retype.js?v=4.6.0" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" data-cfasync="false" src="../../resources/js/lunr.js?v=4.6.0.839188138770" data-turbo-eval="false" defer></script>
+    <script id="prism-js" data-cfasync="false" src="../../resources/js/prism.js?v=4.6.0.839188138770" defer></script>
 </head>
 <body>
     <div id="retype-app" class="relative text-base antialiased text-base-text bg-base-bg font-body">
@@ -163,6 +163,12 @@
 <p>Tagging resources is critical for tracking and analyzing our AWS costs. All required tag keys listed below are now configured as <strong>cost allocation tags</strong> in AWS, which means they directly enable cost reporting and analysis in AWS Cost Explorer. Proper tagging allows us to break down spending by application, team, owner, and specific resource, making it possible to identify cost trends, optimize spending, and allocate costs accurately across teams. For resources managed through Terraform, automated methods should be used to inject tags into all resources.</p>
 <h2 id="required-tags">Required Tags</h2>
 <p>As part of our cost analysis, we have a set of required tags that need to be added to new and existing resources. These tags are configured as cost allocation tags in AWS.</p>
+<retype-table copy-text="| Tag Key       | Details                                                                                                                                            | Example            |
+|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| cdsi-app      | Name of the application. Helps us track total spending per application and identify which apps are driving costs.                                  | cbioportal         |
+| cdsi-team     | Team name within CDSI. Allows us to allocate costs to specific teams and understand spending patterns across the organization.                     | data-visualization |
+| cdsi-owner    | Email of the resource owner. Provides accountability and a point of contact for cost-related questions or optimization opportunities.              | nasirz1@mskcc.org  |
+| resource-name | Name of the specific resource. Enables granular cost tracking at the individual resource level (e.g., database name, bucket name, nodegroup name). | cbioportal-prod-db |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="compact">
 <thead>
@@ -196,6 +202,7 @@
 </tbody>
 </table>
 </div>
+</retype-table>
 <p>For example, the following set of tags have been added to the cbioportal redis nodegroup in AWS EKS.</p>
 <div id="required-tags-code-1" class="codeblock-wrapper"><doc-codeblock>
 <pre translate="no" class="language-yaml"><code v-pre class="language-yaml">tags:
@@ -206,6 +213,13 @@
 </doc-codeblock></div>
 <h3 id="resource-name-tag-guidelines">Resource-Name Tag Guidelines</h3>
 <p>The <code translate="no" v-pre>resource-name</code> tag value should match the actual name of the resource in AWS:</p>
+<retype-table copy-text="| AWS Service | Resource Type | resource-name Example     |
+|-------------|---------------|---------------------------|
+| RDS         | Database      | cbioportal-prod-db        |
+| S3          | Bucket        | cbioportal-datahub        |
+| EKS         | Nodegroup     | cbioportal-redis          |
+| EKS         | Cluster       | cbioportal-prod           |
+| EC2         | Instance      | knowledgesystems-importer |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="compact">
 <thead>
@@ -244,8 +258,15 @@
 </tbody>
 </table>
 </div>
+</retype-table>
 <h2 id="resource-scope">Resource Scope</h2>
 <p>There are a lot of AWS resources that we utilize. However, it is not possible nor practical to tag all those resources. After careful usage analysis, we decided that it&#x27;s better to require tags for those resources that cost us the most. Therefore, when tagging new and existing resources, make sure the following services and resources are tagged at the very least.</p>
+<retype-table copy-text="| AWS Service | Resource Type             |
+|-------------|---------------------------|
+| EKS         | Clusters, Nodegroups      |
+| EC2         | Instances, Load balancers |
+| RDS         | Databases                 |
+| S3          | Buckets                   |">
 <div class="table-wrapper scrollbar overflow-hidden">
 <table class="compact">
 <thead>
@@ -274,6 +295,7 @@
 </tbody>
 </table>
 </div>
+</retype-table>
 
                 
                 <!-- Required only on API pages -->
