@@ -69,6 +69,18 @@ mean the whole clone ran rather than one step of it. Failures are left to the
 `cronjob-failed` monitor, which also sees the init-container failures `notify-slack`
 would never be reached by.
 
-It reads `SLACK_WEBHOOK_URL` from a `slack-webhook` Secret mounted with
-`optional: true`, so the job still runs when the Secret is absent — it just skips the
+`k8s-aws-creds-manager-cronjob` sends one for the opposite reason. It refreshes
+several AWS profiles in a loop, and when some fail while at least one succeeds it logs
+a warning and exits 0 — a healthy Job as far as Kubernetes and Datadog are concerned.
+The hook there fires only on that partial failure and names the failed profiles, so it
+adds signal rather than noise on a job that runs four times a day. Total failure still
+exits 1 and is covered by `cronjob-failed`.
+
+The other credential refreshers — `aws-credentials-refresher` (MSK) and
+`acgc-aws-creds-manager-cronjob` (oncokb-research) — are single-account and run under
+`set -e`, so any failure exits non-zero and the Datadog monitor catches it. They need
+no hook.
+
+All hooks read `SLACK_WEBHOOK_URL` from a `slack-webhook` Secret mounted with
+`optional: true`, so a job still runs when the Secret is absent — it just skips the
 message. The Secret lives in `portal-configuration`.
