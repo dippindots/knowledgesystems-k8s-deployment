@@ -55,3 +55,20 @@ suspended, deleted, or never scheduled emits no failure metric at all.
 > Kubernetes only observes a container's exit code, so no monitor can see an error the
 > job's script swallows. A script without `set -e`, or one ending in a pipeline whose
 > last command succeeds, exits 0 on a partial failure.
+
+### Success notifications
+
+Failure alerting is blanket. Success messages are opt-in per job, because a green
+message is only worth sending where someone would otherwise go and check by hand —
+`aws-credentials-refresher` runs every three hours and would be pure noise.
+
+`cbioagent-clickhouse-clone-daily` (both accounts) sends one: a `notify-slack`
+container reports the newly active database. It is the pod's only regular container,
+so it starts only once every init container has succeeded, which makes the message
+mean the whole clone ran rather than one step of it. Failures are left to the
+`cronjob-failed` monitor, which also sees the init-container failures `notify-slack`
+would never be reached by.
+
+It reads `SLACK_WEBHOOK_URL` from a `slack-webhook` Secret mounted with
+`optional: true`, so the job still runs when the Secret is absent — it just skips the
+message. The Secret lives in `portal-configuration`.
