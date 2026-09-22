@@ -1,7 +1,8 @@
 # Daily clone of the active cBioPortal production color into a ping-pong
 # librechat buffer in ClickHouse, with LLM-prep SQL applied. Pod runs
-# fetch-sql → clone → patch-pointer; Reloader watches clickhouse-mcp-active
-# and rolls the MCP when the patch container flips the buffer pointer.
+# fetch-sql → clone → patch-pointer → notify-slack; Reloader watches
+# clickhouse-mcp-active and rolls the MCP when the patch container flips
+# the buffer pointer.
 #
 # SQL files come from the cbioportal/mcp image (COPY . /app in its
 # Dockerfile, no .dockerignore) via the fetch-sql initContainer.
@@ -189,7 +190,8 @@ spec:
             - name: active-readonly
               configMap:
                 name: clickhouse-mcp-active
-          # Three sequential containers: fetch-sql → clone → patch-pointer.
+          # Three sequential init containers: fetch-sql → clone → patch-pointer,
+          # then notify-slack as the regular container.
           initContainers:
             - name: fetch-sql
               image: cbioportal/mcp:latest
@@ -213,7 +215,6 @@ spec:
                 - mountPath: /active
                   name: active-readonly
                   readOnly: true
-          containers:
             # Patches clickhouse-mcp-active with the buffer the clone
             # container wrote to /workdir/state.env. Reloader (watching
             # clickhouse-mcp-active via the annotation on
@@ -229,6 +230,31 @@ spec:
                   echo "patching clickhouse-mcp-active → ${ACTIVE_DB}"
                   kubectl -n default patch configmap clickhouse-mcp-active \
                     --type=merge -p "{\"data\":{\"CLICKHOUSE_DATABASE\":\"${ACTIVE_DB}\"}}"
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+                  readOnly: true
+          containers:
+            # Sole regular container, so it starts only once every init container
+            # has succeeded — a message from here means the whole clone ran, not
+            # just one step. Failures are reported by the Datadog
+            # `[k8s] CronJob failed` monitor, which sees the init-container
+            # failures this container would never be reached by.
+            - name: notify-slack
+              image: curlimages/curl:8.11.1
+              command: ["/bin/sh", "-c"]
+              envFrom:
+                # Optional so the job still runs before the secret exists.
+                - secretRef:
+                    name: slack-webhook
+                    optional: true
+              args:
+                - |
+                  [ -n "${SLACK_WEBHOOK_URL:-}" ] || { echo "SLACK_WEBHOOK_URL unset, skipping"; exit 0; }
+                  . /workdir/state.env
+                  curl -sS -m 10 -X POST "${SLACK_WEBHOOK_URL}" \
+                    -H "Content-type: application/json" \
+                    --data "{\"text\": \":white_check_mark: *cbioagent-clickhouse-clone-daily* (cbioportal-public) succeeded — active database is now ${ACTIVE_DB}\"}"
               volumeMounts:
                 - mountPath: /workdir
                   name: workdir

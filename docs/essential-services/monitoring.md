@@ -65,3 +65,32 @@ their own CronJobs and are deliberately out of scope.
 > Kubernetes only observes a container's exit code, so no monitor can see an error the
 > job's script swallows. A script without `set -e`, or one ending in a pipeline whose
 > last command succeeds, exits 0 on a partial failure.
+
+### Success notifications
+
+Failure alerting is blanket. Success messages are opt-in per job, because a green
+message is only worth sending where someone would otherwise go and check by hand —
+`aws-credentials-refresher` runs every three hours and would be pure noise.
+
+`cbioagent-clickhouse-clone-daily` (both accounts) sends one: a `notify-slack`
+container reports the newly active database. It is the pod's only regular container,
+so it starts only once every init container has succeeded, which makes the message
+mean the whole clone ran rather than one step of it. Failures are left to the
+`cronjob-failed` monitor, which also sees the init-container failures `notify-slack`
+would never be reached by.
+
+`k8s-aws-creds-manager-cronjob` sends one for the opposite reason. It refreshes
+several AWS profiles in a loop, and when some fail while at least one succeeds it logs
+a warning and exits 0 — a healthy Job as far as Kubernetes and Datadog are concerned.
+The hook there fires only on that partial failure and names the failed profiles, so it
+adds signal rather than noise on a job that runs four times a day. Total failure still
+exits 1 and is covered by `cronjob-failed`.
+
+`aws-credentials-refresher` (MSK) needs no hook: it is single-account and runs under
+`set -e`, so any failure exits non-zero and `cronjob-failed` catches it. The
+oncokb-research refresher shares that shape but sits outside the monitors' cbioportal
+scope, so nothing here watches it.
+
+All hooks read `SLACK_WEBHOOK_URL` from a `slack-webhook` Secret mounted with
+`optional: true`, so a job still runs when the Secret is absent — it just skips the
+message. The Secret lives in `portal-configuration`.

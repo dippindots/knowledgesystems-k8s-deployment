@@ -15,6 +15,11 @@ spec:
               env:
                 - name: DEBIAN_FRONTEND
                   value: noninteractive
+              envFrom:
+                # Optional so the job still runs before the secret exists.
+                - secretRef:
+                    name: slack-webhook
+                    optional: true
               command:
                 - /bin/bash
                 - -c
@@ -26,6 +31,14 @@ spec:
                   # Install dependencies
                   apt-get update -qq
                   apt-get install -y wget jq awscli
+
+                  notify() {
+                    [ -n "${SLACK_WEBHOOK_URL:-}" ] || return 0
+                    wget -qO- --timeout=10 \
+                      --header="Content-Type: application/json" \
+                      --post-data="{\"text\": \"$1\"}" \
+                      "$SLACK_WEBHOOK_URL" >/dev/null 2>&1 || true
+                  }
 
                   # Install kubectl
                   KUBECTL_VERSION=$(wget -qO- https://dl.k8s.io/release/stable.txt)
@@ -93,6 +106,12 @@ spec:
                   done
 
                   echo "Login summary: $SUCCESS_COUNT succeeded, $FAIL_COUNT failed"
+
+                  # A partial failure still exits 0, so Datadog sees a healthy Job.
+                  # This is the only signal that some profiles went stale.
+                  if [ $FAIL_COUNT -gt 0 ]; then
+                    notify ":warning: *k8s-aws-creds-manager* — $FAIL_COUNT of $ACCOUNT_COUNT AWS profile(s) failed to authenticate:$FAILED_PROFILES"
+                  fi
 
                   if [ $SUCCESS_COUNT -eq 0 ]; then
                     echo "ERROR: All $ACCOUNT_COUNT account(s) failed to authenticate."
