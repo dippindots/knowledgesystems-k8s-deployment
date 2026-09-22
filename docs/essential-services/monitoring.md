@@ -80,10 +80,10 @@ The hook there fires only on that partial failure and names the failed profiles,
 adds signal rather than noise on a job that runs four times a day. Total failure still
 exits 1 and is covered by `cronjob-failed`.
 
-The other credential refreshers — `aws-credentials-refresher` (MSK) and
-`acgc-aws-creds-manager-cronjob` (oncokb-research) — are single-account and run under
-`set -e`, so any failure exits non-zero and the Datadog monitor catches it. They need
-no hook.
+`aws-credentials-refresher` (MSK) needs no hook: it is single-account and runs under
+`set -e`, so any failure exits non-zero and `cronjob-failed` catches it. The
+oncokb-research refresher shares that shape but sits outside the monitors' cbioportal
+scope, so nothing here watches it.
 
 All hooks read `SLACK_WEBHOOK_URL` from a `slack-webhook` Secret mounted with
 `optional: true`, so a job still runs when the Secret is absent — it just skips the
